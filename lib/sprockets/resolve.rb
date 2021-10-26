@@ -216,7 +216,9 @@ module Sprockets
       # Returns Array. First element is an Array of hashes or empty, second is a String
       def resolve_main_under_path(load_path, logical_name, mime_exts)
         dirname    = File.dirname(File.join(load_path, logical_name))
-        candidates = self.find_matching_path_for_extensions(dirname, File.basename(logical_name), mime_exts)
+
+        candidates = root_entry(load_path).find_matching_path_for_extensions(logical_name, mime_exts)
+
         candidates.map! do |c|
           { filename: c[0], type: c[1] }
         end

@@ -21,6 +21,7 @@ module Sprockets
       @uris    = {}
       @processor_cache_keys = {}
       @resolved_dependencies = {}
+      @root_entries = {}
     end
 
     # No-op return self as cached environment.
@@ -52,6 +53,10 @@ module Sprockets
     # Internal: Cache Environment#resolve_dependency
     def resolve_dependency(str)
       @resolved_dependencies[str] ||= super(str)
+    end
+
+    def root_entry(path)
+      @root_entries[path] ||= super(path)
     end
 
     private

@@ -14,6 +14,7 @@ require 'sprockets/resolve'
 require 'sprockets/server'
 require 'sprockets/source_map_utils'
 require 'sprockets/uri_tar'
+require 'sprockets/entry'
 
 module Sprockets
 
@@ -142,6 +143,10 @@ module Sprockets
 
     def expand_from_root(uri)
       URITar.new(uri, self).expand
+    end
+
+    def root_entry(path)
+      Entry.new(self, path)
     end
   end
 end
