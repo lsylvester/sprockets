@@ -218,9 +218,8 @@ module Sprockets
         dirname    = File.dirname(File.join(load_path, logical_name))
 
         candidates = root_entry(load_path).find_matching_path_for_extensions(logical_name, mime_exts)
-
         candidates.map! do |c|
-          { filename: c[0], type: c[1] }
+          { filename: c.path, type: c.extname_match }
         end
         return candidates, [ URIUtils.build_file_digest_uri(dirname) ]
       end
@@ -244,9 +243,9 @@ module Sprockets
         candidates = root_entry(load_path).find_matching_path_for_extensions(-File.join(logical_name, -"index"), mime_exts)
 
         candidates.map! do |c|
-          { filename: c[0],
-            type: c[1],
-            index_alias: compress_from_root(c[0].sub(/\/index(\.[^\/]+)$/, '\1')) }
+          { filename: c.path,
+            type: c.extname_match,
+            index_alias: compress_from_root(c.path.sub(/\/index(\.[^\/]+)$/, '\1')) }
         end
 
         return candidates, [ URIUtils.build_file_digest_uri(dirname) ]

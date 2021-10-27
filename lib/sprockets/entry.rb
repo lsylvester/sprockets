@@ -15,13 +15,9 @@ module Sprockets
 
       return matches unless directory_for_logical_path
 
-      directory_for_logical_path.entries.each_value do |entry|
-        if entry.match?(basename)
-          matches << [entry.path, entry.extname_match]
-        end
+      directory_for_logical_path.entries.each_value.select do |entry|
+        entry.match?(basename)
       end
-
-      matches
     end
 
     def match?(name)
