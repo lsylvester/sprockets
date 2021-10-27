@@ -16,16 +16,18 @@ module Sprockets
       return matches unless directory_for_logical_path
 
       directory_for_logical_path.entries.each_value do |entry|
-        next unless entry.basename.start_with?(basename)
-        extname, value = entry.match_path_extname
-        if basename == entry.basename.chomp(extname)
-          if entry.file?
-            matches << [entry.path, value]
-          end
+        if entry.match?(basename)
+          matches << [entry.path, entry.extname_match]
         end
       end
 
       matches
+    end
+
+    def match?(name)
+      basename.start_with?(name) &&
+      logical_name == name &&
+      file?
     end
 
     def stat
@@ -41,7 +43,7 @@ module Sprockets
     end
 
     def logical_name
-      basename.chomp(extension_matches[0]) if extension_matches
+      @logical_name ||= basename.chomp(extname)
     end
 
     def entries
@@ -56,12 +58,19 @@ module Sprockets
       end
     end
 
-    def match_path_extname
+    def extname_match
+      @env.config[:mime_exts][extname]
+    end
+
+    def extname
+      return @extname if defined?(@extname)
+
       i = basename.index('.'.freeze)
       while i && i < basename.length - 1
         extname = basename[i..-1]
-        if value = @env.config[:mime_exts][extname]
-          return extname, value
+        if @env.config[:mime_exts][extname]
+          @extname = extname
+          return @extname
         end
 
         i = basename.index('.'.freeze, i+1)
