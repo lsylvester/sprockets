@@ -8,11 +8,8 @@ module Sprockets
     attr_reader :path
 
     def find_matching_path_for_extensions(logical_name, extensions)
-      dirname  = File.dirname(File.join(@path, logical_name))
-      basename = File.basename(logical_name)
-
-      *directory_names, filename = logical_name.split('/')
-      directory_for_logical_path = directory_names.inject(self){ |directory, path| directory.entries[path] }
+      *directory_names, basename = logical_name.split('/')
+      directory_for_logical_path = directory_names.inject(self){ |directory, path| directory&.entries&.[] path }
 
       matches = []
 
@@ -49,8 +46,12 @@ module Sprockets
 
     def entries
       @entries ||= begin
-        @env.entries(@path).each_with_object({}) do |path, result|
-          result[path] = Entry.new(@env, File.join(@path, path))
+        if stat&.directory?
+          @env.entries(@path).each_with_object({}) do |path, result|
+            result[path] = Entry.new(@env, File.join(@path, path))
+          end
+        else
+          {}
         end
       end
     end

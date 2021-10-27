@@ -241,11 +241,7 @@ module Sprockets
       def resolve_index_under_path(load_path, logical_name, mime_exts)
         dirname = File.join(load_path, logical_name)
 
-        if self.directory?(dirname)
-          candidates = self.find_matching_path_for_extensions(dirname, "index".freeze, mime_exts)
-        else
-          candidates = []
-        end
+        candidates = root_entry(load_path).find_matching_path_for_extensions(-File.join(logical_name, -"index"), mime_exts)
 
         candidates.map! do |c|
           { filename: c[0],
