@@ -5,6 +5,8 @@ module Sprockets
       @env = env
     end
 
+    attr_reader :path
+
     def find_matching_path_for_extensions(logical_name, extensions)
       dirname  = File.dirname(File.join(@path, logical_name))
       basename = File.basename(logical_name)
@@ -16,34 +18,33 @@ module Sprockets
 
       return matches unless directory_for_logical_path
 
-      directory_for_logical_path.entries.keys.each do |entry|
-        next unless File.basename(entry).start_with?(basename)
-        extname, value = match_path_extname(entry, extensions)
-        if basename == entry.chomp(extname)
-          filename = File.join(dirname, entry)
-          if file?(filename)
-            matches << [filename, value]
+      directory_for_logical_path.entries.each_value do |entry|
+        next unless entry.basename.start_with?(basename)
+        extname, value = entry.match_path_extname
+        if basename == entry.basename.chomp(extname)
+          if entry.file?
+            matches << [entry.path, value]
           end
         end
       end
+
       matches
     end
 
-    def stat(path)
-      @env.stat(path)
+    def stat
+      @stat ||= @env.stat(path)
     end
 
-    # Public: Like `File.file?`.
-    #
-    # path - String file path.
-    #
-    # Returns true path exists and is a file.
-    def file?(path)
-      if stat = self.stat(path)
-        stat.file?
-      else
-        false
-      end
+    def basename
+      @basename ||= File.basename(@path)
+    end
+
+    def file?
+      stat&.file?
+    end
+
+    def logical_name
+      basename.chomp(extension_matches[0]) if extension_matches
     end
 
     def entries
@@ -54,13 +55,11 @@ module Sprockets
       end
     end
 
-    def match_path_extname(path, extensions)
-      basename = File.basename(path)
-
+    def match_path_extname
       i = basename.index('.'.freeze)
       while i && i < basename.length - 1
         extname = basename[i..-1]
-        if value = extensions[extname]
+        if value = @env.config[:mime_exts][extname]
           return extname, value
         end
 
